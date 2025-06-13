@@ -1,6 +1,6 @@
 ---
 - name: Install Grafana on EC2 instance
-  hosts: all
+  hosts: grafana_server
   become: yes
 
   vars:
