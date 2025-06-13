@@ -35,6 +35,7 @@
         mode: '0755'
         owner: root
         group: root
+        remote_src: yes
 
     - name: Create systemd service for node_exporter
       copy:
