@@ -1,6 +1,6 @@
 ---
 - name: Install Node Exporter and run as a service
-  hosts: all
+  hosts: docker_server
   become: yes
   vars:
     node_exporter_version: "1.8.1"
