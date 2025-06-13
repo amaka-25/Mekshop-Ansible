@@ -1,6 +1,6 @@
 ---
 - name: Install and run Prometheus as a service
-  hosts: all
+  hosts: prometheus_server
   become: yes
   vars:
     prometheus_version: "2.52.0"
