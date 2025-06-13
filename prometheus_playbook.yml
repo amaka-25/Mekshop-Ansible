@@ -1,0 +1,96 @@
+---
+- name: Install and run Prometheus as a service
+  hosts: all
+  become: yes
+  vars:
+    prometheus_version: "2.52.0"
+    prometheus_user: "prometheus"
+    prometheus_dir: "/etc/prometheus"
+    prometheus_data_dir: "/var/lib/prometheus"
+
+  tasks:
+
+    - name: Create Prometheus user
+      user:
+        name: "{{ prometheus_user }}"
+        shell: /sbin/nologin
+        system: yes
+        create_home: no
+
+    - name: Download Prometheus tarball
+      get_url:
+        url: "https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz"
+        dest: /tmp/prometheus.tar.gz
+
+    - name: Extract Prometheus
+      unarchive:
+        src: /tmp/prometheus.tar.gz
+        dest: /tmp/
+        remote_src: yes
+
+    - name: Copy binaries
+      copy:
+        src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+        dest: "/usr/local/bin/{{ item }}"
+        mode: '0755'
+      loop:
+        - prometheus
+        - promtool
+
+    - name: Create directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ prometheus_user }}"
+        group: "{{ prometheus_user }}"
+        mode: '0755'
+      loop:
+        - "{{ prometheus_dir }}"
+        - "{{ prometheus_data_dir }}"
+
+    - name: Copy config and consoles
+      copy:
+        src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
+        dest: "{{ prometheus_dir }}/{{ item }}"
+        remote_src: yes
+      loop:
+        - consoles
+        - console_libraries
+
+    - name: Copy prometheus.yml
+      copy:
+        src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/prometheus.yml"
+        dest: "{{ prometheus_dir }}/prometheus.yml"
+        remote_src: yes
+
+    - name: Create systemd service
+      copy:
+        dest: /etc/systemd/system/prometheus.service
+        content: |
+          [Unit]
+          Description=Prometheus
+          Wants=network-online.target
+          After=network-online.target
+
+          [Service]
+          User={{ prometheus_user }}
+          Group={{ prometheus_user }}
+          Type=simple
+          ExecStart=/usr/local/bin/prometheus \
+            --config.file={{ prometheus_dir }}/prometheus.yml \
+            --storage.tsdb.path={{ prometheus_data_dir }} \
+            --web.console.templates={{ prometheus_dir }}/consoles \
+            --web.console.libraries={{ prometheus_dir }}/console_libraries
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start Prometheus
+      service:
+        name: prometheus
+        state: started
+        enabled: yes
