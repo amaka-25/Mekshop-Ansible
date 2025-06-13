@@ -28,11 +28,12 @@
         dest: /tmp/
         remote_src: yes
 
-    - name: Copy binaries
+    - name: Copy binaries to /usr/local/bin
       copy:
         src: "/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}"
         dest: "/usr/local/bin/{{ item }}"
         mode: '0755'
+        remote_src: yes
       loop:
         - prometheus
         - promtool
