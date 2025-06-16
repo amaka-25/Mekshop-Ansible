@@ -1,0 +1,59 @@
+Monitoring Stack Setup with Ansible
+This repository contains Ansible playbooks to automate the installation of Grafana, Prometheus, Node Exporter, and Docker on a target host, setting up a monitoring stack.
+Prerequisites
+
+Ansible installed on the control machine (sudo apt install ansible or equivalent).
+SSH access to the target host.
+Target host running a Linux distribution (e.g., Ubuntu, CentOS).
+Sudo privileges on the target host.
+
+Project Structure
+├── playbooks/
+│ ├── <your_playbook_files>.yml
+├── README.md
+
+Playbooks
+The playbooks in the playbooks/ directory handle:
+
+Installation and configuration of Docker.
+Setup of Prometheus for monitoring.
+Installation of Node Exporter for system metrics.
+Deployment of Grafana for visualization.
+
+Usage
+
+Create an inventory file (inventory.yml) with your target host:all:
+
+Run the playbook(s):
+ansible-playbook -i inventory.yml playbooks/<playbook_name>.yml
+[docker_server]
+<docker server ip> ansible_ssh_private_key_file=/path/to/your/private/key.pem
+
+[prometheus_server]
+<prometheus server ip> ansible_ssh_private_key_file=/path/to/your/private/key.pem
+
+[grafana_server]
+<grafana server ip> ansible_ssh_private_key_file=/path/to/your/private/key.pem
+
+[ubuntu_servers]
+<grafana server ip> ansible_ssh_private_key_file=/path/to/your/private/key.pem
+<docker server ip> ansible_ssh_private_key_file=/path/to/your/private/key.pem
+<prometheus server ip> ansible_ssh_private_key_file=/path/to/your/private/key.pem
+
+Access
+
+Prometheus: http://<target_ip>:9090
+Node Exporter: http://<target_ip>:9100
+Grafana: http://<target_ip>:3000 (default login: admin/admin)
+
+Notes
+
+Update ansible_host and ansible_user in the inventory file as needed.
+Ensure ports 9090, 9100, and 3000 are open on the target host.
+For production, secure services with SSL and change default credentials.
+
+Troubleshooting
+
+Check Ansible logs: ansible-playbook -v ...
+Verify service status: sudo systemctl status <service_name>
+Ensure compatibility of Docker, Prometheus, Node Exporter, and Grafana with your OS.
